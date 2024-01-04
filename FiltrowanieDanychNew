@@ -1,0 +1,119 @@
+function analyzeData() {
+  var spreadsheetId = "SHEET_ID"; // Zmień na żądane ID arkusza
+  var spreadsheet = SpreadsheetApp.openById(spreadsheetId); // Otwieranie arkusza na podstawie ID
+  var sheets = spreadsheet.getSheets();
+
+  var headers = ['COMPANY_NAME', 'TITLE', 'CONTACT_EMAIL', 'CV_INFO', 'OWNER', 'OFFER_TYPE']; // Dodanie nagłówków
+
+  // Przetwarzanie każdej zakładki arkusza
+  for (var i = 0; i < sheets.length; i++) {
+    var sheet = sheets[i];
+    var lastRow = sheet.getLastRow();
+    var dataRange = sheet.getRange("A1:K" + lastRow);
+    var data = dataRange.getValues();
+    var outputData = {};
+
+    // Przetwarzanie danych w kolumnach A:K
+    for (var row = 1; row < data.length; row++) {
+      var rowData = data[row];
+      var key = rowData[3] + "-" + rowData[4]; // Klucz unikalny dla wiersza (kolumna D i E)
+      var valueH = rowData[7]; // Wartość w kolumnie H
+      var valueI = rowData[8]; // Wartość w kolumnie I
+      var valueB = rowData[1]; // Wartość w kolumnie B
+      var valueC = rowData[2]; // Wartość w kolumnie C
+
+      // Sumowanie wartości H i I dla unikalnego klucza
+      if (outputData[key]) {
+        outputData[key][3] += valueH;
+        outputData[key][4] += valueI;
+      } else {
+        var outputRow = [rowData[3], rowData[4], rowData[6], valueH, valueI, '', '']; // Dodanie pustej wartości do kolumny P i Q
+        outputData[key] = outputRow;
+      }
+
+      // Dopasowanie wartości z kolumny B do unikalnych kombinacji D i E w kolumnie P
+      if (!outputData[key][5]) { // Sprawdzenie, czy kolumna P jest pusta, jeśli tak, przypisz wartość z kolumny B
+        outputData[key][5] = valueB;
+      }
+
+      // Dopasowanie wartości z kolumny C do unikalnych kombinacji D i E w kolumnie Q
+      if (!outputData[key][6]) { // Sprawdzenie, czy kolumna Q jest pusta, jeśli tak, przypisz wartość z kolumny C
+        outputData[key][6] = valueC;
+      }
+    }
+
+    // Tworzenie tablicy danych wyjściowych
+    var outputArray = [];
+    for (var key in outputData) {
+      var outputRow = outputData[key];
+      var maxVal = Math.max(outputRow[3], outputRow[4]);
+      if (maxVal === outputRow[4]) {
+        outputRow[3] = maxVal + " URL"; // Aktualizacja wartości w kolumnie M
+      } else {
+        outputRow[3] = maxVal;
+      }
+      outputArray.push(outputRow);
+    }
+
+    // Przeniesienie danych z kolumny B do kolumny P i danych z kolumny C do kolumny Q w nowym zestawieniu
+    for (var j = 0; j < outputArray.length; j++) {
+      outputArray[j][4] = outputArray[j][5]; // Przeniesienie wartości z kolumny B do kolumny P
+      outputArray[j][5] = outputArray[j][6]; // Przeniesienie wartości z kolumny C do kolumny Q
+      outputArray[j].splice(5, 1); // Usunięcie kolumny P
+    }
+
+    // Umieszczanie danych wyjściowych w kolumnach L, M, N, O, P, Q
+    if (outputArray.length > 0) {
+      var outputRange = sheet.getRange(2, 12, outputArray.length, outputArray[0].length);
+      outputRange.setValues(outputArray);
+
+      // Usunięcie kolumn A:K
+      sheet.deleteColumns(1, 11);
+
+      // Dodanie nagłówków do arkusza
+      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+      // Dodanie formatowania warunkowego do kolumny D
+      var conditionalRange = sheet.getRange(2, 4, outputArray.length, 1);
+
+      // Formatowanie warunkowe dla wartości <= 3
+      var rule1 = SpreadsheetApp.newConditionalFormatRule()
+        .whenFormulaSatisfied('=OR($D2<=3)')
+        .setBackground("red")
+        .setRanges([conditionalRange])
+        .build();
+
+      // Formatowanie warunkowe dla wartości "0 URL"
+      var rule2 = SpreadsheetApp.newConditionalFormatRule()
+        .whenTextEqualTo('0 URL')
+        .setBackground("red")
+        .setRanges([conditionalRange])
+        .build();
+
+      // Formatowanie warunkowe dla wartości "1 URL"
+      var rule3 = SpreadsheetApp.newConditionalFormatRule()
+        .whenTextEqualTo('1 URL')
+        .setBackground("red")
+        .setRanges([conditionalRange])
+        .build();
+
+      // Formatowanie warunkowe dla wartości "2 URL"
+      var rule4 = SpreadsheetApp.newConditionalFormatRule()
+        .whenTextEqualTo('2 URL')
+        .setBackground("red")
+        .setRanges([conditionalRange])
+        .build();
+
+      // Formatowanie warunkowe dla wartości "3 URL"
+      var rule5 = SpreadsheetApp.newConditionalFormatRule()
+        .whenTextEqualTo('3 URL')
+        .setBackground("red")
+        .setRanges([conditionalRange])
+        .build();
+
+      var rules = sheet.getConditionalFormatRules();
+      rules.push(rule1, rule2, rule3, rule4, rule5);
+      sheet.setConditionalFormatRules(rules);
+    }
+  }
+}
