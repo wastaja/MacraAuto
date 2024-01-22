@@ -105,7 +105,7 @@ function analyzeData() {
         .build();
 
       var rules = sheet.getConditionalFormatRules();
-      rules.push(rule1, rule2, rule3, rule4, rule5);
+      rules.push(rule1, rule2, rule3, rule4);
       sheet.setConditionalFormatRules(rules);
     }
   }
