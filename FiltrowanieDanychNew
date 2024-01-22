@@ -76,7 +76,7 @@ function analyzeData() {
       // Dodanie formatowania warunkowego do kolumny D
       var conditionalRange = sheet.getRange(2, 4, outputArray.length, 1);
 
-      // Formatowanie warunkowe dla wartości <= 3
+      // Formatowanie warunkowe dla wartości <= 2
       var rule1 = SpreadsheetApp.newConditionalFormatRule()
         .whenFormulaSatisfied('=OR($D2<=1)')
         .setBackground("red")
