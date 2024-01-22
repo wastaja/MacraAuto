@@ -78,7 +78,7 @@ function analyzeData() {
 
       // Formatowanie warunkowe dla wartości <= 3
       var rule1 = SpreadsheetApp.newConditionalFormatRule()
-        .whenFormulaSatisfied('=OR($D2<=3)')
+        .whenFormulaSatisfied('=OR($D2<=1)')
         .setBackground("red")
         .setRanges([conditionalRange])
         .build();
@@ -100,13 +100,6 @@ function analyzeData() {
       // Formatowanie warunkowe dla wartości "2 URL"
       var rule4 = SpreadsheetApp.newConditionalFormatRule()
         .whenTextEqualTo('2 URL')
-        .setBackground("red")
-        .setRanges([conditionalRange])
-        .build();
-
-      // Formatowanie warunkowe dla wartości "3 URL"
-      var rule5 = SpreadsheetApp.newConditionalFormatRule()
-        .whenTextEqualTo('3 URL')
         .setBackground("red")
         .setRanges([conditionalRange])
         .build();
